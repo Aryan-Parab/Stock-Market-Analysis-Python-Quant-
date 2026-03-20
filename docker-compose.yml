@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # Python Trading Application
+  trading-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: algorithmic-trading
+    volumes:
+      - .:/app
+      - trading-data:/app/data
+      - ./certs:/app/certs:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+      - JUPYTER_ENABLE_LAB=yes
+    ports:
+      - "5000:5000"
+      - "8000:8000"
+      - "8888:8888"
+    command: >
+      bash -c "jupyter lab 
+      --ip=0.0.0.0 
+      --port=8888 
+      --no-browser 
+      --allow-root 
+      --certfile=/app/certs/jupyter.pem 
+      --keyfile=/app/certs/jupyter.key"
+    networks:
+      - trading-network
+    restart: unless-stopped
+
+  # PostgreSQL Database (optional - for storing trading data)
+  postgres:
+    image: postgres:15-alpine
+    container_name: trading-db
+    environment:
+      POSTGRES_DB: trading_db
+      POSTGRES_USER: trader
+      POSTGRES_PASSWORD: trading_password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - trading-network
+    restart: unless-stopped
+
+  # Redis Cache (optional - for caching market data)
+  redis:
+    image: redis:7-alpine
+    container_name: trading-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - trading-network
+    restart: unless-stopped
+
+volumes:
+  trading-data:
+  postgres-data:
+  redis-data:
+
+networks:
+  trading-network:
+    driver: bridge

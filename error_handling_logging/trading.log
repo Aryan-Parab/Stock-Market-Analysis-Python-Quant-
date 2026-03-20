@@ -1,0 +1,8 @@
+2026-03-13 21:09:08 | trading | ERROR | An error occurred while processing the trade
+2026-03-13 21:09:08 | trading | CRITICAL | System failure - immediate attention required
+2026-03-13 21:09:08 | trading | DEBUG | Calculating signal for AAPL | rsi = 75.500
+2026-03-13 21:09:08 | trading | INFO | Sell signal triggered for AAPL, rsi = 75.500
+2026-03-13 21:09:08 | trading | DEBUG | Calculating signal for TSLA | rsi = 25.100
+2026-03-13 21:09:08 | trading | INFO | Buy signal triggered for TSLA, rsi = 25.100
+2026-03-13 21:09:08 | trading | DEBUG | Calculating signal for MSFT | rsi = 50.000
+2026-03-13 21:09:08 | trading | INFO | No signal triggered for MSFT, rsi = 50.000

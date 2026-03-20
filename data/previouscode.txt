@@ -1,0 +1,258 @@
+# Fetch_data.py
+import yfinance as yf
+import pandas as pd
+import os 
+
+# # Portfolio & timeframe of the stocks
+# tickers = ['AAPL']
+# start_date = '2010-01-01'
+# end_date = '2025-12-31'
+
+# # Make sure data folder exists
+# if not os.path.exists('Investing/data'):
+#     os.makedirs('Investing/data')
+
+# for i in tickers:
+#     # Fetch historical data
+#     df = yf.download (i, start=start_date, end=end_date)
+
+#     # Reset index to have 'Date' as a column
+#     df.reset_index(inplace = True)
+
+#     # Save to CSV
+#     df.to_csv(f"Investing/data/{i}.csv", index=False)
+
+#     print(f"Saved data for {i}, {len(df)} rows.")
+# print(df.head())
+
+
+# clean data.py
+import pandas as pd
+
+# Load csv data
+df = pd.read_csv('Investing/data/AAPL.csv')
+
+
+# Check data
+print(df.head())
+print(df.info())
+print(df.describe())
+print(df.value_counts())
+print(df.isnull().sum())
+
+# Remove duplicate rows
+df = df.drop_duplicates()
+
+# Remove rows where date is AAPL
+df = df[df['Date'] != 'AAPL']
+
+# Remove first row manually
+df = df.iloc[1:]
+
+
+# fill missing values if any
+df = df.ffill()
+df = df.bfill()
+
+
+# Save cleaned data
+df.to_csv('Investing/data/AAPL_cleaned.csv', index = False)
+print("Cleaned data saved")
+
+
+# visualize_data.py
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+
+sns.set_style('whitegrid')
+
+df = pd.read_csv('data/AAPL_cleaned.csv')
+df['Date'] = pd.to_datetime(df['Date'])
+
+#Plotting the closing price over time
+
+plt.figure(figsize=(14, 7))
+plt.plot(df['Date'],df['Open'], label = 'Open Price vs Time')
+plt.title("Apple Stock Open Price Over Time")
+plt.xlabel('Date')
+plt.ylabel('Open Price (USD)')
+plt.legend()
+plt.savefig('apple_open_price_over_time.png')
+print("Plot saved in the output folder")
+
+# eda.py
+
+import pandas as pd
+import numpy  as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load clean dataset for eda
+df = pd.read_csv('data/AAPL_cleaned.csv')
+
+# Cleaning the dataset by dropping the 'Unnamed: 0' column
+#df = df.drop(columns=['Unnamed: 0'])
+
+# Convert date column
+df['Date'] = pd.to_datetime(df['Date'])
+
+# Set Date as index
+df.set_index('Date', inplace=True)
+
+print(df.head(3))
+
+df.info()
+
+# Understand price vs returns 
+#Simple daily returns ( there is no fixed range for daily returns)
+# if the mean daily return is 0.0005 -> 0.05% daily -> good, 0.001-> 0.1% daily -> strong, negative-> prblm
+
+df['daily_return'] = df['Close'].pct_change()
+# pct_change (returns formula) = (price today - price yesterday) / price yesterday
+
+# log return ( very important in quants)
+df['log_return'] = np.log(df['Close'] / df['Close'].shift(1))
+
+# log_return = ln(P_today / P_yesterday) = ln(P_today) - ln(P_yesterday)
+# used in quantitave finance, better statistical properities, additive over time
+print(df[['Close','daily_return','log_return']].head())
+
+# --------xxxxxxxxxxxxx------------------
+
+# Basics Statistics
+mean_return = df['daily_return'].mean()
+
+volatility = df['daily_return'].std() # it measures risk, and assests, (how violently price moves)
+# More volatility = more opportunity + more risk
+
+# print(f"Mean Daily Return: {mean_return:.4f}")
+# print(f"Daily Return Volatility: {volatility:.4f}")
+
+# # why mean return and volatitly because finance is built on them, Risk = varaince (volatility)
+# # Now annualize them
+# annual_return = mean_return * 252
+
+# annual_volatility = volatility * np.sqrt(252)
+
+# print(f"Annual return: {annual_return:.4f}")
+# print(f"Annual Volatility: {annual_volatility:.4f}")
+
+# Why 252 because there are 252 trading days in us markets per year
+
+# Distribution Analysis
+''' plt.figure(figsize = (12,8))
+sns.histplot(df['daily_return'].dropna(), bins = 50, kde = True)
+plt.title('Distribution  of Daily Returns')
+plt.savefig("output/daily_return_distribution.png")
+print("Distribution plot saved")
+
+# Step 5 - Cumulative Returns 
+df['cumulative_return'] = (1+df['daily_return']).cumprod()
+
+plt.figure (figsize=(12,8))
+plt.plot(df['cumulative_return'])
+plt.title('Cumulative Return Over Time')
+plt.savefig("output/cumulative_return.png")
+print("Cumulative return plot saved")
+
+# Step 6 Sharpe Ratio. ( Annual Retun - Risk Free Rate) / Annual Volatility
+# it measures how much return you are getting for the risk you are taking. Higher is better.  
+risk_free_rate = 0.02 # Assume 2%
+#excess_return = annual_return - risk_free_rate
+
+#sharpe_ratio = excess_return / annual_volatility
+
+# print(f"Sharpe Ratio: {sharpe_ratio:.4f}")
+# Value of Sharpe Ratio can be interpreted as follows:
+# <1 - weak, 1-2 - descent , 2 - 3 - strong, 3> - exceptional 
+
+# Step 7 - Max drawdown
+rolling_max = df['cumulative_return'].cummax()
+drawdown = df['cumulative_return'] / rolling_max -1
+max_drawdown = drawdown.min()
+
+# print(f"Max Drawdown: {max_drawdown:.4f}")
+
+# Annual Return (estimation) = sharpe ration * annual_volatlity 
+
+# Correation Analysis 
+print(df['daily_return'].autocorr())
+
+# Distribution Analysis (Shape of Returns)
+
+# Consider 
+# Are returns normally distributed? - Markets doesn't have normal distribution
+# Are there any extreme events in the market?
+# Is downside risk heavier than upside risk? 
+
+# Histogram
+import matplotlib.pyplot as plt
+import numpy as p
+
+returns = df['daily_return'].dropna()
+print("Min:", returns.min())
+print("Max:", returns.max())
+plt.hist(returns, bins= 100, density = True, alpha = 0.6)
+
+#Focus on realistic daily return
+plt.xlim(-0.10, 0.17)
+
+# Format 
+plt.gca().xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{x*100:.1f}%'))
+plt.title('Histogram of Daily Returns')
+plt.xlabel("Daily Return (%)")
+plt.ylabel("Density")
+plt.grid(True)
+plt.tight_layout()
+plt.savefig("output/daily_return_histogram.png")
+print("Distribution (Histogram) plot saved")
+
+
+## Skewness & Kurtosis
+skew = returns.skew()
+kurtosis = returns.kurtosis()
+
+print(f"Skewness: {skew:.3f}")
+print(f"Kurtosis: {kurtosis:.3f}")
+# After the output, symmetry is normal and fat tails for kurtosis.
+# tails are fat -> Risk is higher that volatility suggests, because of extreme events.
+# Drawdowns will be worse than predicted.
+
+# So we need to have thin tails.
+
+# Autocorrelation
+# to check does today's returns depens on yesterdays' returns
+
+from statsmodels.graphics.tsaplots import plot_acf
+
+plot_acf(df['daily_return'].dropna()**2, lags = 20)
+plt.savefig("output/daily_returns_autocorrelation.png")
+print("Autocorrelation plot saved")
+
+
+# Calculate the lag-1 for ACF Number
+lag_1 = df['daily_return'].autocorr(lag=1)
+
+print(lag_1)
+
+
+lag_2 = df['daily_return'].autocorr(lag=2)
+
+print(lag_2)''' 
+
+
+# printing all the lag values from 1 to 20
+
+for j in range(1,21):
+    lag_value = df['daily_return'].autocorr(lag =j)
+    print(f"Lag {j}:{lag_value:.4f}")
+
+# Squared returns to check for volatitlty clustering
+lag_squared = df['daily_return'].dropna()**2
+
+for i in range(1,21):
+    lag_value_squared = lag_squared.autocorr(lag = i)
+    print(f"Lag {i} (squared returns): {lag_value_squared:.4f}")
+
