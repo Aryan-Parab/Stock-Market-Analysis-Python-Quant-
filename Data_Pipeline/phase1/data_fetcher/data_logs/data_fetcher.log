@@ -1,0 +1,6 @@
+2026-03-20 17:28:08 - data_fetcher - INFO - logger is working
+2026-03-20 17:28:08 - data_fetcher - DEBUG - Download data for AAPL from yfinance
+2026-03-20 17:28:08 - data_fetcher - INFO - AAPL data fetched successfully, shape: (2811, 6), rows: 2811
+2026-03-20 18:22:23 - data_fetcher - INFO - logger is working
+2026-03-20 18:22:23 - data_fetcher - DEBUG - Download data for AAPL from yfinance
+2026-03-20 18:22:24 - data_fetcher - INFO - AAPL data fetched successfully, shape: (2811, 6), rows: 2811

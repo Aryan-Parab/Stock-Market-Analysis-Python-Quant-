@@ -1,0 +1,20 @@
+# data_fetcher.py
+# fetch real time data
+    # def fetch_real_time_data(self,ticker):
+    #     url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={ticker}&apikey={ALPHA_key}"
+    #     params = {'function': 'GLOBAL_QUOTE', 'symbol': ticker, 'apikey': ALPHA_key}
+    #     response = requests.get(url, params=params)
+    #     return response.json()
+    
+    # fetching historical data
+    # def fetch_historical_data(self,tickers, start= '2015-01-01', end='2026-03-10'):
+    #     data ={}
+    #     for i in tickers:
+    #         try:
+    #             df=self.fetch_data_yfinance(i, start,end)
+    #             df.to_csv(f"{i}_data.csv", index = False)
+    #             data[i] = df
+    #             print(f"Data for {i} fetched and saved with shape {df.shape} and length {len(df)}")
+    #         except Exception as e:
+    #             print(f"Error fetching data for {i}: {e}")
+    #     return data

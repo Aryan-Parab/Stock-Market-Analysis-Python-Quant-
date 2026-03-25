@@ -1,0 +1,9 @@
+2026-03-20 16:27:23 - data_fetcher - INFO - logger is working
+2026-03-20 16:45:52 - data_fetcher - INFO - logger is working
+2026-03-20 17:14:28 - data_fetcher - INFO - logger is working
+2026-03-20 17:16:01 - data_fetcher - INFO - logger is working
+2026-03-20 17:16:01 - data_fetcher - DEBUG - Download data for AAPL from yfinance / alpha_vantage
+2026-03-20 17:16:01 - data_fetcher - INFO - AAPL data fetched successfully, shape: (2811, 6), rows: 2811
+2026-03-20 17:23:19 - data_fetcher - INFO - logger is working
+2026-03-20 17:23:19 - data_fetcher - DEBUG - Download data for AAPL from yfinance
+2026-03-20 17:23:19 - data_fetcher - INFO - AAPL data fetched successfully, shape: (2811, 6), rows: 2811
