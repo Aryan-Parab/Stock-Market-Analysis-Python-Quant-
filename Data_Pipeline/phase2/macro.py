@@ -1,8 +1,10 @@
 # fred macroeconomic data
+from email import errors
+from dotenv import load_dotenv
 import os
 import time
 import logging
-from turtle import pd
+import pandas as pd  
 import requests
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -13,12 +15,19 @@ logging.basicConfig(level = logging.DEBUG,
 log = logging.getLogger(__name__)
 
 # Configuration
-FRED_API_KEY = os.getenv('FRED_API_KEY', "your_fred_api_key_here") # READS THE KEY FROM THE ENVIRONMENT NOT FROM THE CODE
+#FRED_API_KEY = "1c9faac63039de9c90a7897d6363ddfd" # READS THE KEY FROM THE ENVIRONMENT NOT FROM THE CODE
+load_dotenv() # loads environment variables from .env file into the system environment
+FRED_API_KEY = os.getenv("FRED_API_KEY")
+
+if not FRED_API_KEY:
+    log.error("FRED API key not found. Please check the key in your .env file.")
 FRED_BASE_URL = "https://api.stlouisfed.org/fred/series/observations" # URL THAT ALL THE FRED DATA COMES FROM
 DATA_DIR = Path('data_macro') # ALL THE DATA WILL BE STORED IN THIS FOLDER
 DATA_DIR.mkdir(exist_ok=True)
 
-# Series to download {column_name: fred_series_id}}
+# Series to download {column_name: fred_series_id}} 
+# left side column names , right side = fred series ids
+# we are pulling interest rates, yeild curve, inflatio, and labor market
 FRED_SERIES = {
     "fed_funds_rate": "FEDFUNDS", # overnight rate-monthly
     "treasury_10yr": "DGS10", # 10 year treasury yield-daily
@@ -28,23 +37,127 @@ FRED_SERIES = {
 
 }
 
-# fetch helpers
-def fetch_fred_data(series_id, start_date, end_date, retries:int = 3)-> pd.Series:
-    if end_date is None:
+# fetch helpers - download one time series from fred with retries and error handling, returns list of (date, value) tuples
+def fetch_fred_data(series_id, start_date, end_date, retries:int = 3): # fetch a single macroecconomic time series
+
+# define cache file path
+    cache  = DATA_DIR / F"{series_id}.csv"
+
+# check if file already exisists
+    if cache.exists():
+        log.info("Loading %s from cache",series_id,cache)
+        series = pd.read_csv(cache, index_col = 0, parse_dates = True).squeeze()
+        series.name = series_id
+        return series
+
+    if end_date is None: # if end date is not provided, use today's date as default
         end_date = datetime.today().strftime('%Y-%m-%d')
 
+# this dict is sent to the api to specify needs
     params = {
         "series_id":series_id,  
         "api_key": FRED_API_KEY,
         "file_type":"json",
         "observation_start": start_date,
+        "observation_end": end_date
     }
-    for attempt in range(retries):
+    for attempt in range(retries): # tries API call multiple times
         try:
             response = requests.get(FRED_BASE_URL, params = params, timeout = 15)
-            response.raise_for_status()
-            data = response.json()
-            if "observations":
-                pass
-        except:
-            pass
+            # send https request to fred, include params as query string 
+            response.raise_for_status() # error handling for http errors
+            data = response.json() # convert data into json format
+            if "observations" not in data: # prevent silent failures if API returns unexpected format
+                raise ValueError (f"Unexpected FRED response for {series_id}: {data}")
+            
+            # loops through all the observations and extracts date, value, skip missing values
+            records = [
+                (obs['date'], obs['value']) 
+                for obs in data['observations']
+                if obs['value']!="."
+                ] # filter out missing values
+            
+            if not records: # handle empty data
+                log.warning("No observations returned for %s",series_id)
+                return pd.Series(dtype = float, name = series_id)
+            
+            # zip records - split the list of (date, value)pairs into 2 separate lists
+            # pd.to_datetime(dates) - converts string dates like "2015-01-02" into proper pandas date objects
+            # pd.to_numeric(..., errors = 'coerce') converts string values like 2.12 into actual numbers, anything that 
+            # cannot be converted becomes Nan
+
+            dates, values = zip(*records) # unzip into separate lists
+            series = pd.Series(data = pd.to_numeric(values, errors = 'coerce'),index = pd.to_datetime(dates),
+                name = series_id,dtype = float)
+            
+# Save to cache for future use
+            series.to_csv(cache, header = True)
+            log.info("Saved %s to cache at %s", series_id, cache)
+            return series
+        
+# error handling 
+        except requests.exceptions.HTTPError as e:
+            if response.status_code == 429: # too many request, wait and try again
+                wait_time = 2**attempt*5
+                log.warning("Rate limit on %s, waiting %d seconds before retrying...", series_id, wait_time )
+                time.sleep(wait_time)
+            else:
+                raise e
+            
+        except requests.exceptions.RequestException as e:
+            log.error("Request failed for %s (attempt%d): %s", series_id, attempt +1,e)
+            if attempt == retries -1:
+                raise e
+            
+    return pd.Series(dtype = float, name = series_id)
+
+# s = fetch_fred_data("DGS10", "2015-01-01", None)
+# print(s)
+
+# ----------------------- Derived Indicators -----------------------
+# positive  - Normal economy health, Near Zero -> Caution - slow down possible
+# Negative - Inverted recession making
+
+
+# def compute_yield_curve(df_macro: pd.DataFrame) -> pd.DataFrame:
+#     """10Y minus 2Y yield curve spread. Negative = inverted = recession warning."""
+#     if "treasury_10yr" in df_macro.columns and "treasury_2yr" in df_macro.columns:
+#         df_macro["yield_curve"] = (df_macro["treasury_10yr"] - df_macro["treasury_2yr"]) 
+#         # simple subtraction of two columns results in the yield curve spread
+#         log.info("Computed yield curve spread")
+    
+#     else:
+#         log.warning("Cannot compute yield curve spread - missing data (10yr or 2yr)")
+
+#     return df_macro
+
+# def compute_cpi_yoy(df_macro: pd.DataFrame) -> pd.DataFrame:
+#     """Year-over-year change in CPI as a measure of inflation."""
+#     if "cpi" in df_macro.columns:
+#         df_macro["cpi_yoy"] = df_macro["cpi"].pct_change(periods=12) * 100
+#         log.info("Computed CPI year-over-year change")
+#     else:
+#         log.warning("Cannot compute CPI YoY - missing CPI data")
+    
+#     return df_macro
+
+
+# # Alignment 
+# def align_macro_to_prices(price_index: pd.DatetimeIndex,df_macro: pd.DataFrame) -> pd.DataFrame:
+#     combined_index = price_index.union(df_macro.index).sort_values()
+    
+#     aligned = (
+#         df_macro.reindex(combined_index).ffill().reindex(price_index)
+
+#     )
+
+#     missing_pct = aligned.isnull().mean() *100
+#     for col, pct in missing_pct.items():
+#         if pct >5:
+#             log.warning("Column %s is %.1f%% mising after alignment", col, pct)
+
+#     log.info("Macro aligned to price index with %d rows", len(aligned), len(aligned.columns))
+#     return aligned
+
+# # Main Dowload function
+
