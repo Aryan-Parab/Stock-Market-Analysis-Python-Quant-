@@ -21,6 +21,9 @@ FRED_API_KEY = os.getenv("FRED_API_KEY")
 
 if not FRED_API_KEY:
     log.error("FRED API key not found. Please check the key in your .env file.")
+
+    raise ValueError("FRED_API_KEY environment variable is not set.")
+
 FRED_BASE_URL = "https://api.stlouisfed.org/fred/series/observations" # URL THAT ALL THE FRED DATA COMES FROM
 DATA_DIR = Path('data_macro') # ALL THE DATA WILL BE STORED IN THIS FOLDER
 DATA_DIR.mkdir(exist_ok=True)
@@ -31,7 +34,7 @@ DATA_DIR.mkdir(exist_ok=True)
 FRED_SERIES = {
     "fed_funds_rate": "FEDFUNDS", # overnight rate-monthly
     "treasury_10yr": "DGS10", # 10 year treasury yield-daily
-    "treasure_2yr": "DGS2", # 2 year treasury yield-daily
+    "treasury_2yr": "DGS2", # 2 year treasury yield-daily
     "unemployment": "UNRATE", # unemployment rate-monthly
     "cpi": "CPIAUCSL", # consumer price index-monthly
 
@@ -45,7 +48,7 @@ def fetch_fred_data(series_id, start_date, end_date, retries:int = 3): # fetch a
 
 # check if file already exisists
     if cache.exists():
-        log.info("Loading %s from cache",series_id,cache)
+        log.info("Loading %s from cache at %s", series_id, cache)
         series = pd.read_csv(cache, index_col = 0, parse_dates = True).squeeze()
         series.name = series_id
         return series
@@ -111,6 +114,12 @@ def fetch_fred_data(series_id, start_date, end_date, retries:int = 3): # fetch a
             
     return pd.Series(dtype = float, name = series_id)
 
+# running for the sake
+if __name__ =="__main__":
+    # Test with one series
+    result = fetch_fred_data('DGS10','2015-01-01',None)
+    print(result.tail())
+
 # s = fetch_fred_data("DGS10", "2015-01-01", None)
 # print(s)
 
@@ -160,4 +169,17 @@ def fetch_fred_data(series_id, start_date, end_date, retries:int = 3): # fetch a
 #     return aligned
 
 # # Main Dowload function
+
+def download_macro_data(start_date, end_date):
+    df_macro = pd.DataFrame() # empty dataframe to store all the macro data
+    for name, series_id in FRED_SERIES.items():
+        log.info("Downloading %s (%s)", name, series_id)
+        series = fetch_fred_data(series_id, start_date, end_date)
+        df_macro[name] = series
+    df_macro=df_macro.sort_index(inplace = True) # sort the index by date
+    return df_macro
+
+if __name__ == "__main__":
+      print("Downloading macro data...")
+      df = download_macro_data("2015-01-01", None)
 
