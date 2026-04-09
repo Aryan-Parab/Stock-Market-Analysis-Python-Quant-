@@ -1,0 +1,12 @@
+2026-04-09 13:43:33 - __main__ - INFO - Downloading fed_funds_rate (FEDFUNDS)
+2026-04-09 13:43:33 - __main__ - INFO - Loading FEDFUNDS from cache at data_macro\FEDFUNDS.csv
+2026-04-09 13:43:33 - __main__ - INFO - Downloading treasury_10yr (DGS10)
+2026-04-09 13:43:33 - __main__ - INFO - Loading DGS10 from cache at data_macro\DGS10.csv
+2026-04-09 13:43:33 - __main__ - INFO - Downloading treasury_2yr (DGS2)
+2026-04-09 13:43:33 - __main__ - INFO - Loading DGS2 from cache at data_macro\DGS2.csv
+2026-04-09 13:43:33 - __main__ - INFO - Downloading unemployment (UNRATE)
+2026-04-09 13:43:33 - __main__ - INFO - Loading UNRATE from cache at data_macro\UNRATE.csv
+2026-04-09 13:43:33 - __main__ - INFO - Downloading cpi (CPIAUCSL)
+2026-04-09 13:43:33 - __main__ - INFO - Loading CPIAUCSL from cache at data_macro\CPIAUCSL.csv
+2026-04-09 13:43:33 - __main__ - INFO - Computed yield curve spread
+2026-04-09 13:43:33 - __main__ - INFO - Computed CPI year-over-year change

@@ -1,18 +1,29 @@
 # fred macroeconomic data
 from email import errors
 from dotenv import load_dotenv
+import logging 
+from logging.handlers import RotatingFileHandler
 import os
 import time
-import logging
 import pandas as pd  
 import requests
 from pathlib import Path
 from datetime import datetime, timedelta
 
+
+log = logging.getLogger(__name__)
+DATA_DIR = Path('data_macro') # ALL THE DATA WILL BE STORED IN THIS FOLDER
+DATA_DIR.mkdir(exist_ok=True)
+LOG_DIR = DATA_DIR/'logs'
+LOG_DIR.mkdir(exist_ok=True)
+
 logging.basicConfig(level = logging.DEBUG,
                     format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     datefmt = '%H:%M:%S')
-log = logging.getLogger(__name__)
+file_handler = RotatingFileHandler(LOG_DIR /'macro.log', maxBytes = 1024 *1024, backupCount = 5)
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt = '%Y-%m-%d %H:%M:%S'))
+logging.getLogger().addHandler(file_handler)
 
 # Configuration
 #FRED_API_KEY = "1c9faac63039de9c90a7897d6363ddfd" # READS THE KEY FROM THE ENVIRONMENT NOT FROM THE CODE
@@ -113,29 +124,6 @@ def fetch_fred_data(series_id, start_date, end_date, retries:int = 3): # fetch a
                 raise e
             
     return pd.Series(dtype = float, name = series_id)
-
-# running for the sake
-if __name__ =="__main__":
-    # Test with one series
-    result = fetch_fred_data('DGS10','2015-01-01',None)
-    print(result.tail())
-
-# # Alignment 
-# def align_macro_to_prices(price_index: pd.DatetimeIndex,df_macro: pd.DataFrame) -> pd.DataFrame:
-#     combined_index = price_index.union(df_macro.index).sort_values()
-    
-#     aligned = (
-#         df_macro.reindex(combined_index).ffill().reindex(price_index)
-
-#     )
-
-#     missing_pct = aligned.isnull().mean() *100
-#     for col, pct in missing_pct.items():
-#         if pct >5:
-#             log.warning("Column %s is %.1f%% mising after alignment", col, pct)
-
-#     log.info("Macro aligned to price index with %d rows", len(aligned), len(aligned.columns))
-#     return aligned
 
 # # Main Dowload function
 
