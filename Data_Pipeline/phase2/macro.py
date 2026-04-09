@@ -120,37 +120,6 @@ if __name__ =="__main__":
     result = fetch_fred_data('DGS10','2015-01-01',None)
     print(result.tail())
 
-# s = fetch_fred_data("DGS10", "2015-01-01", None)
-# print(s)
-
-# ----------------------- Derived Indicators -----------------------
-# positive  - Normal economy health, Near Zero -> Caution - slow down possible
-# Negative - Inverted recession making
-
-
-# def compute_yield_curve(df_macro: pd.DataFrame) -> pd.DataFrame:
-#     """10Y minus 2Y yield curve spread. Negative = inverted = recession warning."""
-#     if "treasury_10yr" in df_macro.columns and "treasury_2yr" in df_macro.columns:
-#         df_macro["yield_curve"] = (df_macro["treasury_10yr"] - df_macro["treasury_2yr"]) 
-#         # simple subtraction of two columns results in the yield curve spread
-#         log.info("Computed yield curve spread")
-    
-#     else:
-#         log.warning("Cannot compute yield curve spread - missing data (10yr or 2yr)")
-
-#     return df_macro
-
-# def compute_cpi_yoy(df_macro: pd.DataFrame) -> pd.DataFrame:
-#     """Year-over-year change in CPI as a measure of inflation."""
-#     if "cpi" in df_macro.columns:
-#         df_macro["cpi_yoy"] = df_macro["cpi"].pct_change(periods=12) * 100
-#         log.info("Computed CPI year-over-year change")
-#     else:
-#         log.warning("Cannot compute CPI YoY - missing CPI data")
-    
-#     return df_macro
-
-
 # # Alignment 
 # def align_macro_to_prices(price_index: pd.DatetimeIndex,df_macro: pd.DataFrame) -> pd.DataFrame:
 #     combined_index = price_index.union(df_macro.index).sort_values()
@@ -176,10 +145,43 @@ def download_macro_data(start_date, end_date):
         log.info("Downloading %s (%s)", name, series_id)
         series = fetch_fred_data(series_id, start_date, end_date)
         df_macro[name] = series
-    df_macro=df_macro.sort_index(inplace = True) # sort the index by date
+    df_macro.sort_index(inplace = True) # sort the index by date
     return df_macro
 
-if __name__ == "__main__":
-      print("Downloading macro data...")
-      df = download_macro_data("2015-01-01", None)
+# if __name__ == "__main__":
+#       print("Downloading macro data...")
+#       df = download_macro_data("2015-01-01", None)
 
+ #----------------------- Derived Indicators -----------------------
+#positive  - Normal economy health, Near Zero -> Caution - slow down possible
+#Negative - Inverted recession making
+
+
+def compute_yield_curve(df_macro: pd.DataFrame) -> pd.DataFrame:
+    """10Y minus 2Y yield curve spread. Negative = inverted = recession warning."""
+    if "treasury_10yr" in df_macro.columns and "treasury_2yr" in df_macro.columns:
+        df_macro["yield_curve"] = (df_macro["treasury_10yr"] - df_macro["treasury_2yr"]) 
+        # simple subtraction of two columns results in the yield curve spread
+        log.info("Computed yield curve spread")
+    
+    else:
+        log.warning("Cannot compute yield curve spread - missing data (10yr or 2yr)")
+
+    return df_macro
+
+def compute_cpi_yoy(df_macro: pd.DataFrame) -> pd.DataFrame:
+    """Year-over-year change in CPI as a measure of inflation."""
+    if "cpi" in df_macro.columns:
+        df_macro["cpi_yoy"] = df_macro["cpi"].pct_change(12) * 100
+        log.info("Computed CPI year-over-year change")
+    else:
+        log.warning("Cannot compute CPI YoY - missing CPI data")
+    
+    return df_macro
+
+
+if __name__ == "__main__":
+    df = download_macro_data("2026-04-08", None)
+    df = compute_yield_curve(df)
+    df = compute_cpi_yoy(df)
+    print(df.head())
