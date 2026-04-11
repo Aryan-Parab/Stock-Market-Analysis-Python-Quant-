@@ -136,15 +136,6 @@ def download_macro_data(start_date, end_date):
     df_macro.sort_index(inplace = True) # sort the index by date
     return df_macro
 
-# if __name__ == "__main__":
-#       print("Downloading macro data...")
-#       df = download_macro_data("2015-01-01", None)
-
- #----------------------- Derived Indicators -----------------------
-#positive  - Normal economy health, Near Zero -> Caution - slow down possible
-#Negative - Inverted recession making
-
-
 def compute_yield_curve(df_macro: pd.DataFrame) -> pd.DataFrame:
     """10Y minus 2Y yield curve spread. Negative = inverted = recession warning."""
     if "treasury_10yr" in df_macro.columns and "treasury_2yr" in df_macro.columns:
@@ -173,3 +164,4 @@ if __name__ == "__main__":
     df = compute_yield_curve(df)
     df = compute_cpi_yoy(df)
     print(df.head())
+

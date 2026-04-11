@@ -1,0 +1,30 @@
+2026-04-10 14:10:20 - data_fetcher - INFO - logger is working
+2026-04-10 14:10:20 - data_fetcher - DEBUG - Download data for AAPL from yfinance
+2026-04-10 14:10:26 - data_fetcher - INFO - AAPL data fetched successfully, shape: (2811, 6), rows: 2811
+2026-04-10 14:10:26 - data_fetcher - DEBUG - Download data for AAPL from yfinance
+2026-04-10 14:10:26 - data_fetcher - INFO - AAPL data fetched successfully, shape: (252, 6), rows: 252
+2026-04-10 14:16:07 - data_fetcher - INFO - logger is working
+2026-04-10 14:16:07 - data_fetcher - DEBUG - Download data for AAPL from yfinance
+2026-04-10 14:16:08 - data_fetcher - INFO - AAPL data fetched successfully, shape: (2811, 6), rows: 2811
+2026-04-10 14:16:08 - data_fetcher - DEBUG - Download data for AAPL from yfinance
+2026-04-10 14:16:08 - data_fetcher - INFO - AAPL data fetched successfully, shape: (252, 6), rows: 252
+2026-04-11 15:23:21 - data_fetcher - INFO - logger is working
+2026-04-11 15:23:21 - data_fetcher - DEBUG - Download data for AAPL from yfinance
+2026-04-11 15:23:28 - data_fetcher - INFO - AAPL data fetched successfully, shape: (2811, 6), rows: 2811
+2026-04-11 15:23:28 - data_fetcher - DEBUG - Download data for AAPL from yfinance
+2026-04-11 15:23:29 - data_fetcher - INFO - AAPL data fetched successfully, shape: (252, 6), rows: 252
+2026-04-11 15:31:02 - data_fetcher - INFO - logger is working
+2026-04-11 15:31:02 - data_fetcher - DEBUG - Download data for AAPL from yfinance
+2026-04-11 15:31:02 - data_fetcher - INFO - AAPL data fetched successfully, shape: (2811, 6), rows: 2811
+2026-04-11 15:31:02 - data_fetcher - DEBUG - Download data for AAPL from yfinance
+2026-04-11 15:31:03 - data_fetcher - INFO - AAPL data fetched successfully, shape: (252, 6), rows: 252
+2026-04-11 15:38:11 - data_fetcher - INFO - logger is working
+2026-04-11 15:38:11 - data_fetcher - DEBUG - Download data for AAPL from yfinance
+2026-04-11 15:38:12 - data_fetcher - INFO - AAPL data fetched successfully, shape: (2811, 6), rows: 2811
+2026-04-11 15:38:12 - data_fetcher - DEBUG - Download data for AAPL from yfinance
+2026-04-11 15:38:12 - data_fetcher - INFO - AAPL data fetched successfully, shape: (252, 6), rows: 252
+2026-04-11 15:40:12 - data_fetcher - INFO - logger is working
+2026-04-11 15:40:12 - data_fetcher - DEBUG - Download data for AAPL from yfinance
+2026-04-11 15:40:13 - data_fetcher - INFO - AAPL data fetched successfully, shape: (2811, 6), rows: 2811
+2026-04-11 15:40:13 - data_fetcher - DEBUG - Download data for AAPL from yfinance
+2026-04-11 15:40:13 - data_fetcher - INFO - AAPL data fetched successfully, shape: (252, 6), rows: 252
