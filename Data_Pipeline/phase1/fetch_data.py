@@ -1,14 +1,13 @@
-from tkinter import FALSE
 import colorlog
 #from anyio import Path
 import pandas as pd
 import matplotlib.pyplot as plt
-import yfinance as yf
-import requests
+import importlib
 import os
 import logging
 from pathlib import Path
 from logging.handlers import RotatingFileHandler
+
 
 #from unused_files.config import DATA_DIR
 
@@ -23,7 +22,7 @@ ALPHA_key = os.getenv('ALPHA_VANTAGE_API_KEY')
 def set_logger(name):
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
-    logger.propagate = FALSE
+    logger.propagate = False
     logger.handlers.clear()
 
     formatter = logging.Formatter(
@@ -66,10 +65,16 @@ class DataFetcher:
     # fetching data from yfinance
     def fetch_data_yfinance(self,ticker, start_date, end_date):
         try:
-            logger.debug(f"Download data for {ticker} from yfinance") # debug
-            df = yf.download(ticker, start=start_date, end=end_date, auto_adjust = True)
-            df.to_csv(f"{ticker}_data.csv", index = False)
-            if df.empty:
+            yf = importlib.import_module("yfinance")
+            logger.debug(f"Download data for {ticker} from {start_date} to {end_date}") # debug
+            df = yf.download(ticker, 
+                             start=start_date, 
+                             end=end_date, 
+                             auto_adjust = True,
+                             progress=False)
+
+            # check whether Yahoo Finance returned any data 
+            if df is None or df.empty:
                 logger.warning(f"No data found for {ticker}, check the ticker name or date_range")
                 return None
             
@@ -81,15 +86,16 @@ class DataFetcher:
         except Exception as e:
             logger.error(f"Unexpected crash occurred while fetching data for {ticker}: {e}") # critical
             return None
+
+        if isinstance(df.columns, pd.MultiIndex):
+            df.columns = df.columns.get_level_values(0)
     
 # ususage
-fetcher_aapl = DataFetcher('AAPL', '2015-01-01', '2026-03-10')
-# fetcher_googl = DataFetcher('GOOGL', '2015-01-01', '2026-03-10')
-# fetcher_msft = DataFetcher('MSFT', '2015-01-01', '2026-03-10')
-
-data=fetcher_aapl.fetch_data_yfinance('AAPL', '2015-01-01', '2026-03-10')
-# data=fetcher_googl.fetch_historical_data(['GOOGL'])
-# data=fetcher_msft.fetch_historical_data(['MSFT'])
-print(data)
-
-
+if __name__ == "__main__":
+    fetcher_aapl = DataFetcher(
+        "AAPL", "2020-01-01", "2026-10-10"
+    )
+    data = fetcher_aapl.fetch_data_yfinance(
+        "AAPL", "2020-01-01", "2026-10-10"
+    )
+    print(data)
